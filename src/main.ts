@@ -1,23 +1,31 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as compression from 'compression';
-import helmet from 'helmet';
+import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
+import * as compression from 'compression';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  
 
   app.use(compression());
   app.use(helmet()); 
 
-    const allowedOrigins = configService.get('ALLOWED_ORIGINS') || 
-    'http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:5173';
-  
-  // Enable CORS
+  const allowedOrigins = configService.get('ALLOWED_ORIGINS') || 
+  'http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:5173';
+
+  // Global validation pipe
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
+ // Enable CORS
   app.enableCors({
     origin: (origin, callback) => {
       if (!origin) {
@@ -41,8 +49,8 @@ async function bootstrap() {
     preflightContinue: false,
     optionsSuccessStatus: 204,
   })
-  
-  // Global validation pipe
+
+    // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -50,8 +58,8 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  
-  // Swagger API documentation
+
+    // Swagger API documentation
   const config = new DocumentBuilder()
     .setTitle('Olgnova API')
     .setDescription('Olgnova Research API')
@@ -60,10 +68,11 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
-  
-  // Start the server
-  const port = configService.get<number>('PORT') || 3000;
-  await app.listen(port);
+
+  // Global prefix
+  app.setGlobalPrefix('api');
+
+  await app.listen(process.env.PORT || 3000);
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();

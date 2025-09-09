@@ -1,228 +1,131 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Types } from 'mongoose';
+import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
 
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { type Document, Types } from "mongoose"
-import { BlogStatus, ContentBlockType } from "../../common/enums"
-import { BaseSchema } from "../../common/schemas/base.schema"
+export type BlogDocument = Blog & Document;
 
-export type BlogDocument = Blog & Document
-
-// Content block for rich text editing (Medium-style)
-@Schema({ _id: false })
-export class ContentBlock {
-  @Prop({ enum: ContentBlockType, required: true })
-  type: ContentBlockType
-
-  @Prop({ type: Object })
-  data: Record<string, any>
-
-  @Prop()
-  order: number
-}
-
-// SEO and social media metadata
-@Schema({ _id: false })
-export class BlogMetadata {
-  @Prop()
-  metaTitle?: string
-
-  @Prop()
-  metaDescription?: string
-
-  @Prop()
-  canonicalUrl?: string
-
-  @Prop()
-  ogTitle?: string
-
-  @Prop()
-  ogDescription?: string
-
-  @Prop()
-  ogImage?: string
-
-  @Prop()
-  twitterTitle?: string
-
-  @Prop()
-  twitterDescription?: string
-
-  @Prop()
-  twitterImage?: string
-
-  @Prop([String])
-  keywords?: string[]
-}
-
-// Analytics and engagement data
-@Schema({ _id: false })
-export class BlogAnalytics {
-  @Prop({ default: 0 })
-  viewCount: number
-
-  @Prop({ default: 0 })
-  uniqueViewCount: number
-
-  @Prop({ default: 0 })
-  readCount: number
-
-  @Prop({ default: 0 })
-  clapCount: number
-
-  @Prop({ default: 0 })
-  shareCount: number
-
-  @Prop({ default: 0 })
-  bookmarkCount: number
-
-  @Prop({ default: 0 })
-  commentCount: number
-
-  @Prop({ default: 0 })
-  wordCount: number // Added this property
-
-  @Prop()
-  averageReadTime?: number
-
-  @Prop()
-  estimatedReadTime?: number
-}
-
-// Publication settings
-@Schema({ _id: false })
-export class PublicationSettings {
-  @Prop({ default: true })
-  allowComments: boolean
-
-  @Prop({ default: true })
-  allowClaps: boolean
-
-  @Prop({ default: false })
-  isPremium: boolean
-
-  @Prop({ default: false })
-  isFeatured: boolean
-
-  @Prop({ default: false })
-  isEditorsPick: boolean
-
-  @Prop()
-  scheduledPublishAt?: Date
-
-  @Prop([String])
-  distributionChannels?: string[]
+export enum BlogStatus {
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+  ARCHIVED = 'archived',
 }
 
 @Schema({ timestamps: true })
-export class Blog extends BaseSchema {
-  @Prop({ required: true })
-  title: string
-
-  @Prop({ required: true, unique: true })
-  slug: string
-
-  @Prop()
-  subtitle?: string
+export class Blog {
+  @Prop({ required: true, trim: true })
+  @IsString()
+  title: string;
 
   @Prop({ required: true })
-  content: string
+  @IsString()
+  content: string;
 
-  @Prop([ContentBlock])
-  contentBlocks?: ContentBlock[]
+  @Prop({ required: true, trim: true })
+  @IsString()
+  excerpt: string;
 
-  @Prop()
-  excerpt?: string
+  @Prop({ unique: true }) // no longer required, slug will be auto-generated
+  slug: string;
 
-  @Prop()
-  featuredImage?: string
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  author: Types.ObjectId;
 
-  @Prop()
-  featuredImageAlt?: string
+  @Prop({ type: [String], default: [] })
+  @IsArray()
+  @IsOptional()
+  tags: string[];
 
-  @Prop()
-  featuredImageCaption?: string
+  @Prop({ type: String, enum: BlogStatus, default: BlogStatus.DRAFT })
+  status: BlogStatus;
 
-  @Prop([String])
-  tags?: string[]
+  @Prop({ default: null })
+  @IsOptional()
+  @IsString()
+  featuredImage?: string;
 
-  @Prop()
-  category?: string
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
+  likes: Types.ObjectId[];
 
-  @Prop({ type: Types.ObjectId, ref: "Category" })
-  categoryId?: Types.ObjectId
+  @Prop({ default: 0 })
+  viewCount: number;
 
-  @Prop({ type: Types.ObjectId, ref: "Series" })
-  seriesId?: Types.ObjectId
+  @Prop({ default: 0 })
+  readTime: number; // in minutes
 
-  @Prop()
-  seriesOrder?: number
+  @Prop({ type: [String], default: [] })
+  @IsArray()
+  @IsOptional()
+  categories: string[];
 
-  @Prop({ enum: BlogStatus, default: BlogStatus.DRAFT })
-  status: BlogStatus
+  @Prop({ default: true })
+  @IsBoolean()
+  allowComments: boolean;
 
-  @Prop({ type: Types.ObjectId, required: true, ref: "User" })
-  authorId: Types.ObjectId
+  @Prop({ default: false })
+  @IsBoolean()
+  isPinned: boolean;
 
-  @Prop()
-  authorName?: string
+  @Prop({ default: null })
+  publishedAt?: Date;
 
-  @Prop([{ type: Types.ObjectId, ref: "User" }])
-  coAuthors?: Types.ObjectId[]
-
-  @Prop({ type: Types.ObjectId, ref: "Publication" })
-  publicationId?: Types.ObjectId
-
-  @Prop()
-  publishedAt?: Date
-
-  @Prop()
-  lastModifiedAt?: Date
-
-  @Prop({ type: BlogAnalytics, default: () => ({}) })
-  analytics: BlogAnalytics
-
-  @Prop({ type: BlogMetadata, default: () => ({}) })
-  metadata: BlogMetadata
-
-  @Prop({ type: PublicationSettings, default: () => ({}) })
-  settings: PublicationSettings
-
-  @Prop()
-  language?: string
-
-  @Prop([String])
-  relatedPosts?: string[]
-
-  @Prop()
-  tableOfContents?: string[]
-
-  @Prop()
-  version?: number
-
-  @Prop([
-    {
-      version: Number,
-      content: String,
-      modifiedAt: Date,
-      modifiedBy: { type: Types.ObjectId, ref: "User" },
+  @Prop({
+    type: {
+      title: String,
+      description: String,
+      keywords: [String],
     },
-  ])
-  revisionHistory?: Array<{
-    version: number
-    content: string
-    modifiedAt: Date
-    modifiedBy: Types.ObjectId
-  }>
+    default: null,
+  })
+  seo?: {
+    title: string;
+    description: string;
+    keywords: string[];
+  };
 }
 
-export const BlogSchema = SchemaFactory.createForClass(Blog)
+export const BlogSchema = SchemaFactory.createForClass(Blog);
+
+BlogSchema.virtual('comments', {
+  ref: 'Comment',           // The model to use
+  localField: '_id',        // Blog _id
+  foreignField: 'blog',     // Comment.blog
+});
+
+// Make sure virtuals are included in JSON output
+BlogSchema.set('toObject', { virtuals: true });
+BlogSchema.set('toJSON', { virtuals: true });
 
 // Indexes for better performance
-BlogSchema.index({ slug: 1 })
-BlogSchema.index({ authorId: 1, status: 1 })
-BlogSchema.index({ status: 1, publishedAt: -1 })
-BlogSchema.index({ tags: 1 })
-BlogSchema.index({ category: 1 })
-BlogSchema.index({ "analytics.viewCount": -1 })
-BlogSchema.index({ "analytics.clapCount": -1 })
-BlogSchema.index({ createdAt: -1 })
-BlogSchema.index({ publishedAt: -1 })
+BlogSchema.index({ author: 1 });
+BlogSchema.index({ status: 1 });
+BlogSchema.index({ tags: 1 });
+BlogSchema.index({ categories: 1 });
+BlogSchema.index({ slug: 1 });
+BlogSchema.index({ createdAt: -1 });
+BlogSchema.index({ likes: 1 });
+BlogSchema.index({ title: 'text', content: 'text', excerpt: 'text' });
+
+// Pre-save middleware to generate slug and calculate read time
+BlogSchema.pre('save', function (next) {
+  // Always generate slug if missing
+  if (!this.slug && this.title) {
+    this.slug = this.title
+      .toLowerCase()
+      .replace(/[^a-zA-Z0-9 ]/g, '') // remove special chars
+      .replace(/\s+/g, '-') // replace spaces with dashes
+      .substring(0, 100);
+  }
+
+  // Auto-calculate read time from content
+  if (this.isModified('content')) {
+    const wordCount = this.content.split(/\s+/).length;
+    this.readTime = Math.ceil(wordCount / 200); // ~200 words per minute
+  }
+
+  // Set publishedAt when status changes to PUBLISHED
+  if (this.status === BlogStatus.PUBLISHED && !this.publishedAt) {
+    this.publishedAt = new Date();
+  }
+
+  next();
+});

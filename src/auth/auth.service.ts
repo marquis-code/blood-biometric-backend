@@ -1,9 +1,10 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common"
-import { JwtService } from "@nestjs/jwt"
-import { UsersService } from "../users/users.service"
-import { InjectModel } from "@nestjs/mongoose"
-import * as bcrypt from "bcryptjs"
-import { LoginDto } from "./dto/login.dto"
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { UsersService } from '../users/users.service';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
+import * as bcrypt from 'bcryptjs';
+import { JwtPayload } from '../common/interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
@@ -12,22 +13,24 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<any> {
-    const user = await this.usersService.findByEmail(email)
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const { password, ...result } = user.toObject()
-      return result
-    }
-    return null
-  }
-
-  async login(loginDto: LoginDto) {
-    const user = await this.validateUser(loginDto.email, loginDto.password)
-    if (!user) {
-      throw new UnauthorizedException("Invalid credentials")
+  async register(registerDto: RegisterDto) {
+    const existingUser = await this.usersService.findByEmail(registerDto.email);
+    if (existingUser) {
+      throw new ConflictException('Email already exists');
     }
 
-    const payload = { email: user.email, sub: user._id, role: user.role }
+    const hashedPassword = await bcrypt.hash(registerDto.password, 12);
+    const user = await this.usersService.create({
+      ...registerDto,
+      password: hashedPassword,
+    });
+
+    const payload: JwtPayload = {
+      email: user.email,
+      sub: user._id.toString(),
+      role: user.role,
+    };
+
     return {
       access_token: this.jwtService.sign(payload),
       user: {
@@ -37,6 +40,41 @@ export class AuthService {
         lastName: user.lastName,
         role: user.role,
       },
+    };
+  }
+
+  async login(loginDto: LoginDto) {
+    const user = await this.usersService.findByEmail(loginDto.email);
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
     }
+
+    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    await this.usersService.updateLastLogin(user._id.toString());
+
+    const payload: JwtPayload = {
+      email: user.email,
+      sub: user._id.toString(),
+      role: user.role,
+    };
+
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      },
+    };
+  }
+
+  async validateUser(payload: JwtPayload) {
+    return await this.usersService.findById(payload.sub);
   }
 }

@@ -1,19 +1,16 @@
-import { Module } from "@nestjs/common"
-import { MongooseModule } from "@nestjs/mongoose"
-import { ThrottlerModule } from "@nestjs/throttler"
+import { Module, ValidationPipe } from '@nestjs/common';
+import { APP_PIPE, APP_FILTER, APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_INTERCEPTOR } from "@nestjs/core"
-import { AuthModule } from "./auth/auth.module"
-import { UsersModule } from "./users/users.module"
-import { EnquiriesModule } from "./enquiries/enquiries.module"
-import { SubscriptionsModule } from "./subscriptions/subscriptions.module"
-import { TeamsModule } from "./teams/teams.module"
-import { PublicationsModule } from "./publications/publications.module"
-import { ProgramsModule } from "./programs/programs.module"
-import { BlogsModule } from "./blogs/blogs.module"
-import { FormsModule } from "./forms/forms.module"
-import { AuditModule } from "./audit/audit.module"
-import { AuditInterceptor } from "./common/interceptors/audit.interceptor"
+import { MongooseModule } from '@nestjs/mongoose';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { BlogsModule } from './blogs/blogs.module';
+import { CommentsModule } from './comments/comments.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { DatabaseService } from './common/database/database.service';
 
 @Module({
   imports: [
@@ -33,25 +30,36 @@ import { AuditInterceptor } from "./common/interceptors/audit.interceptor"
       }),
     ThrottlerModule.forRoot([
       {
-        ttl: 60000,
-        limit: 10,
+        ttl: 60000, // 1 minute
+        limit: 100, // 100 requests per minute
       },
     ]),
     AuthModule,
     UsersModule,
-    EnquiriesModule,
-    SubscriptionsModule,
-    TeamsModule,
-    PublicationsModule,
-    ProgramsModule,
     BlogsModule,
-    FormsModule,
-    AuditModule,
+    CommentsModule,
   ],
   providers: [
+    DatabaseService,
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
     {
       provide: APP_INTERCEPTOR,
-      useClass: AuditInterceptor,
+      useClass: LoggingInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

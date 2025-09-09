@@ -1,17 +1,36 @@
-import { Controller, Post, Request } from "@nestjs/common"
-import { AuthService } from "./auth.service"
-import { LoginDto } from "./dto/login.dto"
-import { Audit } from "../common/decorators/audit.decorator"
-import { AuditAction } from "../common/enums"
+import { Controller, Post, Body, UseGuards, Get, Request } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
-@Controller("auth")
+@Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post("login")
-  @Audit(AuditAction.LOGIN, "auth")
-  async login(@Request() req) {
-    const loginDto: LoginDto = req.body
-    return this.authService.login(loginDto)
+  @Post('register')
+  async register(@Body() registerDto: RegisterDto) {
+    return this.authService.register(registerDto);
+  }
+
+  @Post('login')
+  async login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  getProfile(@Request() req) {
+    return {
+      user: {
+        id: req.user._id,
+        email: req.user.email,
+        firstName: req.user.firstName,
+        lastName: req.user.lastName,
+        role: req.user.role,
+        avatar: req.user.avatar,
+        bio: req.user.bio,
+      },
+    };
   }
 }

@@ -1,95 +1,59 @@
-import { Injectable, ConflictException, NotFoundException } from "@nestjs/common"
-import { Model } from "mongoose"
-import * as bcrypt from "bcryptjs"
-import { User, UserDocument } from "./schemas/user.schema"
-import { CreateUserDto } from "./dto/create-user.dto"
-import { UpdateUserDto } from "./dto/update-user.dto"
-import { InjectModel } from "@nestjs/mongoose"
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User, UserDocument } from './schemas/user.schema';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+  ) {}
 
-  constructor( @InjectModel(User.name) private userModel: Model<UserDocument>) {
+  async create(createUserDto: CreateUserDto): Promise<UserDocument> {
+    const createdUser = new this.userModel(createUserDto);
+    return createdUser.save();
   }
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const existingUser = await this.userModel.findOne({ email: createUserDto.email })
-    if (existingUser) {
-      throw new ConflictException("User with this email already exists")
-    }
-
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10)
-    const user = new this.userModel({
-      ...createUserDto,
-      password: hashedPassword,
-    })
-
-    return user.save()
+  async findAll(): Promise<UserDocument[]> {
+    return this.userModel.find({ isActive: true }).select('-password').exec();
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userModel.find({ isDeleted: false }).select("-password").exec()
-  }
-
-  async findOne(id: string): Promise<User> {
-    const user = await this.userModel.findOne({ _id: id, isDeleted: false }).select("-password").exec()
+  async findById(id: string): Promise<UserDocument> {
+    const user = await this.userModel.findById(id).select('-password').exec();
     if (!user) {
-      throw new NotFoundException("User not found")
+      throw new NotFoundException('User not found');
     }
-    return user
+    return user;
   }
 
-  async findByEmail(email: string): Promise<User> {
-    return this.userModel.findOne({ email, isDeleted: false }).exec()
+  async findByEmail(email: string): Promise<UserDocument> {
+    return this.userModel.findOne({ email, isActive: true }).exec();
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    if (updateUserDto.password) {
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10)
-    }
-
-    const user = await this.userModel
-      .findOneAndUpdate({ _id: id, isDeleted: false }, updateUserDto, { new: true })
-      .select("-password")
-      .exec()
-
-    if (!user) {
-      throw new NotFoundException("User not found")
-    }
-    return user
+  async updateLastLogin(id: string): Promise<void> {
+    await this.userModel.findByIdAndUpdate(id, { lastLogin: new Date() });
   }
 
-  async softDelete(id: string, deletedBy: string): Promise<void> {
-    const result = await this.userModel.updateOne(
-      { _id: id, isDeleted: false },
-      { isDeleted: true, deletedAt: new Date(), deletedBy },
-    )
-
-    if (result.matchedCount === 0) {
-      throw new NotFoundException("User not found")
-    }
+  async followUser(followerId: string, followingId: string): Promise<void> {
+    await this.userModel.findByIdAndUpdate(followerId, {
+      $addToSet: { following: followingId },
+    });
+    await this.userModel.findByIdAndUpdate(followingId, {
+      $addToSet: { followers: followerId },
+    });
   }
 
-  async hardDelete(id: string): Promise<void> {
-    const result = await this.userModel.deleteOne({ _id: id })
-    if (result.deletedCount === 0) {
-      throw new NotFoundException("User not found")
-    }
+  async unfollowUser(followerId: string, followingId: string): Promise<void> {
+    await this.userModel.findByIdAndUpdate(followerId, {
+      $pull: { following: followingId },
+    });
+    await this.userModel.findByIdAndUpdate(followingId, {
+      $pull: { followers: followerId },
+    });
   }
 
-  async restore(id: string): Promise<User> {
-    const user = await this.userModel
-      .findOneAndUpdate(
-        { _id: id, isDeleted: true },
-        { isDeleted: false, $unset: { deletedAt: 1, deletedBy: 1 } },
-        { new: true },
-      )
-      .select("-password")
-      .exec()
-
-    if (!user) {
-      throw new NotFoundException("User not found or not deleted")
-    }
-    return user
+  async deactivateUser(id: string): Promise<void> {
+    await this.userModel.findByIdAndUpdate(id, { isActive: false });
   }
 }
