@@ -1,24 +1,24 @@
-# Build stage
-FROM node:22-alpine AS builder
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm install
-
-COPY . .
-RUN npm run build
-
-# Production stage
 FROM node:22-alpine
 
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
-RUN npm install --omit=dev
 
-COPY --from=builder /app/dist ./dist
+# Install ALL dependencies (needed for build)
+RUN npm install
 
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Remove dev dependencies after build
+RUN npm prune --omit=dev
+
+# Expose port
 EXPOSE 3001
 
-CMD ["node", "dist/main.js"]
+# Start the application
+CMD ["npm", "run", "start:prod"]
