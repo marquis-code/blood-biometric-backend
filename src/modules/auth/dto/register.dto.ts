@@ -1,0 +1,22 @@
+import { IsEmail, IsNotEmpty, IsOptional, IsEnum, IsString, MinLength } from 'class-validator';
+
+export class RegisterDto {
+  @IsNotEmpty()
+  @IsString()
+  firstName: string;
+
+  @IsNotEmpty()
+  @IsString()
+  lastName: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsNotEmpty()
+  @MinLength(6)
+  password: string;
+
+  @IsOptional()
+  @IsEnum(['patient', 'doctor'])
+  role?: string;
+}

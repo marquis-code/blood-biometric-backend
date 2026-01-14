@@ -1,25 +1,30 @@
 import { Module, ValidationPipe } from '@nestjs/common';
-import { APP_PIPE, APP_FILTER, APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule, ConfigService } from "@nestjs/config"
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { BlogsModule } from './blogs/blogs.module';
-import { CommentsModule } from './comments/comments.module';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-import { TransformInterceptor } from './common/interceptors/transform.interceptor';
-import { DatabaseService } from './common/database/database.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
+
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { DoctorsModule } from './modules/doctors/doctors.module';
+import { AppointmentsModule } from './modules/appointments/appointments.module';
+import { PaymentsModule } from './modules/payments/payments.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { BiometricModule } from './modules/biometric/biometric.module';
+import { DonorsModule } from './modules/donors/donors.module';
+import { DonationsModule } from './modules/donations/donations.module';
+import { StaffModule } from './modules/staff/staff.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env', `.env.${process.env.NODE_ENV || 'development'}`],
+      envFilePath: ['.env', `.env.${process.env.NODE_ENV || 'development'}`]
     }),
-       // Database
-       MongooseModule.forRootAsync({
+
+    MongooseModule.forRootAsync({
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: async (configService: ConfigService) => ({
@@ -30,37 +35,23 @@ import { DatabaseService } from './common/database/database.service';
       }),
     ThrottlerModule.forRoot([
       {
-        ttl: 60000, // 1 minute
-        limit: 100, // 100 requests per minute
+        ttl: 60000, 
+        limit: 100,
       },
     ]),
+    ScheduleModule.forRoot(),
     AuthModule,
     UsersModule,
-    BlogsModule,
-    CommentsModule,
-  ],
-  providers: [
-    DatabaseService,
-    {
-      provide: APP_PIPE,
-      useClass: ValidationPipe,
-    },
-    {
-      provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: LoggingInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TransformInterceptor,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-  ],
+    DoctorsModule,
+    AppointmentsModule,
+    PaymentsModule,
+    ReviewsModule,
+    NotificationsModule,
+    AdminModule,
+    BiometricModule,
+    DonorsModule,
+    DonationsModule,
+    StaffModule,
+  ]
 })
 export class AppModule {}
