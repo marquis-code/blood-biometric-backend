@@ -137,18 +137,32 @@ export class BiometricService {
     };
   }
 
-  async getAllCredentials() {
-    const donors = await this.donorModel.find({}, 'credentialId');
-    const challenge = this.generateChallenge();
-    const challengeId = crypto.randomBytes(16).toString('hex');
+  // async getAllCredentials() {
+  //   const donors = await this.donorModel.find({}, 'credentialId');
+  //   const challenge = this.generateChallenge();
+  //   const challengeId = crypto.randomBytes(16).toString('hex');
     
-    this.challenges.set(challengeId, { challenge, timestamp: Date.now() });
+  //   this.challenges.set(challengeId, { challenge, timestamp: Date.now() });
 
-    return {
-      credentials: donors.map(d => ({ credentialId: d.credentialId })),
-      challenge,
-      challengeId,
-      rpId: this.getRpId(),
-    };
-  }
+  //   return {
+  //     credentials: donors.map(d => ({ credentialId: d.credentialId })),
+  //     challenge,
+  //     challengeId,
+  //     rpId: this.getRpId(),
+  //   };
+  // }
+  async getAllCredentials() {
+  const donors = await this.donorModel.find({}, 'credentialId').lean();
+  const challenge = this.generateChallenge();
+  const challengeId = crypto.randomBytes(16).toString('hex');
+  
+  this.challenges.set(challengeId, { challenge, timestamp: Date.now() });
+
+  return {
+    credentials: donors.map((d: any) => ({ credentialId: d.credentialId })),
+    challenge,
+    challengeId,
+    rpId: this.getRpId(),
+  };
+}
 }

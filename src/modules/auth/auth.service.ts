@@ -2,7 +2,6 @@ import { Injectable, UnauthorizedException, ConflictException, BadRequestExcepti
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
-import { NotificationsService } from '../notifications/notifications.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtPayload } from '../../common/interfaces/jwt-payload.interface';
@@ -12,7 +11,6 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    private notificationsService: NotificationsService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -142,7 +140,6 @@ export class AuthService {
     );
 
     await this.usersService.setResetPasswordToken(email, resetToken);
-    await this.notificationsService.sendPasswordResetEmail(email, resetToken);
 
     return { message: 'If an account exists, a password reset email has been sent.' };
   }

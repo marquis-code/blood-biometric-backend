@@ -3,14 +3,14 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DonationsController } from './donations.controller';
 import { DonationsService } from './donations.service';
 import { Donation, DonationSchema } from './schemas/donation.schema';
-import { Donor, DonorSchema } from '../donors/schemas/donor.schema';
+import { DonorsModule } from '../donors/donors.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Donation.name, schema: DonationSchema },
-      { name: Donor.name, schema: DonorSchema },
     ]),
+    DonorsModule, // Import the entire module instead
   ],
   controllers: [DonationsController],
   providers: [DonationsService],

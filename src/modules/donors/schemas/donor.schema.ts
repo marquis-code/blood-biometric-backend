@@ -1,7 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-
-export type DonorDocument = Donor & Document;
+import { HydratedDocument } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Donor {
@@ -39,13 +37,14 @@ export class Donor {
   medicalNotes?: string;
 
   @Prop({ default: null })
-  lastDonationDate: string;
+  lastDonationDate?: string;
 
   @Prop({ type: [String], default: [] })
-  donationHistory: string[]; // Array of donation IDs
+  donationHistory: string[];
 
   @Prop({ default: Date.now })
   registrationDate: Date;
 }
 
 export const DonorSchema = SchemaFactory.createForClass(Donor);
+export type DonorDocument = HydratedDocument<Donor>;

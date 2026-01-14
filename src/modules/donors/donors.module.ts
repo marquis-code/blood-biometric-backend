@@ -10,6 +10,6 @@ import { Donor, DonorSchema } from './schemas/donor.schema';
   ],
   controllers: [DonorsController],
   providers: [DonorsService],
-  exports: [DonorsService],
+  exports: [DonorsService, MongooseModule], // Export MongooseModule
 })
 export class DonorsModule {}
