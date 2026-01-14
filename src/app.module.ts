@@ -23,8 +23,6 @@ import { StaffModule } from './modules/staff/staff.module';
         inject: [ConfigService],
         useFactory: async (configService: ConfigService) => ({
           uri: configService.get<string>('MONGO_URL'),
-          // REMOVED: useNewUrlParser: true,
-          // REMOVED: useUnifiedTopology: true,
         }),
       }),
     ThrottlerModule.forRoot([
