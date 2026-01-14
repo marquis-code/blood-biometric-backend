@@ -15,12 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DonationsController = void 0;
 const common_1 = require("@nestjs/common");
 const donations_service_1 = require("./donations.service");
+const record_donation_dto_1 = require("./dto/record-donation.dto");
 let DonationsController = class DonationsController {
     constructor(donationsService) {
         this.donationsService = donationsService;
     }
-    async recordDonation(body) {
-        return await this.donationsService.recordDonation(body.donorId, body.quantity, body.location, body.staffId, body.notes);
+    async recordDonation(recordDonationDto) {
+        return await this.donationsService.recordDonation(recordDonationDto.donorId, recordDonationDto.quantity, recordDonationDto.location, recordDonationDto.staffId, recordDonationDto.notes);
     }
     async findAll() {
         return await this.donationsService.findAll();
@@ -30,7 +31,7 @@ __decorate([
     (0, common_1.Post)('record'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [record_donation_dto_1.RecordDonationDto]),
     __metadata("design:returntype", Promise)
 ], DonationsController.prototype, "recordDonation", null);
 __decorate([

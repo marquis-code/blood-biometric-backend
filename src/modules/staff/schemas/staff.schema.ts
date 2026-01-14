@@ -1,31 +1,20 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Staff {
   @Prop({ required: true })
-  firstName: string;
-
-  @Prop({ required: true })
-  lastName: string;
+  name: string; // Changed from firstName/lastName to just name
 
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop()
-  phone?: string;
+  @Prop({ required: true })
+  password: string;
 
-  @Prop()
-  role?: string;
-
-  @Prop()
-  department?: string;
-
-  @Prop({ type: Boolean, default: true })
-  isActive: boolean;
-
-  @Prop()
-  password?: string;
+  @Prop({ required: true })
+  role: string; // 'nurse', 'doctor', 'admin'
 }
 
 export const StaffSchema = SchemaFactory.createForClass(Staff);
-export type StaffDocument = any;
+export type StaffDocument = HydratedDocument<Staff>;

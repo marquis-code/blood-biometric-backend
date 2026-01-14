@@ -8,10 +8,10 @@ export declare class StaffService {
         success: boolean;
         message: string;
         staff: {
-            id: any;
-            name: any;
-            email: any;
-            role: any;
+            id: import("mongoose").Types.ObjectId;
+            name: string;
+            email: string;
+            role: string;
         };
     }>;
 }

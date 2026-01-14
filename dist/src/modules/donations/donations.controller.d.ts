@@ -26,10 +26,11 @@
 /// <reference types="mongoose/types/inferhydrateddoctype" />
 /// <reference types="mongoose/types/inferrawdoctype" />
 import { DonationsService } from './donations.service';
+import { RecordDonationDto } from './dto/record-donation.dto';
 export declare class DonationsController {
     private readonly donationsService;
     constructor(donationsService: DonationsService);
-    recordDonation(body: any): Promise<{
+    recordDonation(recordDonationDto: RecordDonationDto): Promise<{
         success: boolean;
         message: string;
         donor: {

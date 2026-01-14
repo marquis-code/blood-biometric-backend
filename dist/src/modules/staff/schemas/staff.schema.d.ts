@@ -20,20 +20,16 @@
 /// <reference types="mongoose/types/utility" />
 /// <reference types="mongoose/types/validation" />
 /// <reference types="mongoose/types/virtuals" />
-/// <reference types="mongoose" />
 /// <reference types="mongoose/types/schematypes" />
 /// <reference types="mongoose/types/inferschematype" />
 /// <reference types="mongoose/types/inferhydrateddoctype" />
 /// <reference types="mongoose/types/inferrawdoctype" />
+import { HydratedDocument } from 'mongoose';
 export declare class Staff {
-    firstName: string;
-    lastName: string;
+    name: string;
     email: string;
-    phone?: string;
-    role?: string;
-    department?: string;
-    isActive: boolean;
-    password?: string;
+    password: string;
+    role: string;
 }
 export declare const StaffSchema: import("mongoose").Schema<Staff, import("mongoose").Model<Staff, any, any, any, (import("mongoose").Document<unknown, any, Staff, any, import("mongoose").DefaultSchemaOptions> & Staff & {
     _id: import("mongoose").Types.ObjectId;
@@ -54,16 +50,7 @@ export declare const StaffSchema: import("mongoose").Schema<Staff, import("mongo
 }, "id"> & {
     id: string;
 }, {
-    firstName?: import("mongoose").SchemaDefinitionProperty<string, Staff, import("mongoose").Document<unknown, {}, Staff, {
-        id: string;
-    }, import("mongoose").ResolveSchemaOptions<import("mongoose").DefaultSchemaOptions>> & Omit<Staff & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
-        __v: number;
-    }, "id"> & {
-        id: string;
-    }>;
-    lastName?: import("mongoose").SchemaDefinitionProperty<string, Staff, import("mongoose").Document<unknown, {}, Staff, {
+    name?: import("mongoose").SchemaDefinitionProperty<string, Staff, import("mongoose").Document<unknown, {}, Staff, {
         id: string;
     }, import("mongoose").ResolveSchemaOptions<import("mongoose").DefaultSchemaOptions>> & Omit<Staff & {
         _id: import("mongoose").Types.ObjectId;
@@ -81,7 +68,7 @@ export declare const StaffSchema: import("mongoose").Schema<Staff, import("mongo
     }, "id"> & {
         id: string;
     }>;
-    phone?: import("mongoose").SchemaDefinitionProperty<string, Staff, import("mongoose").Document<unknown, {}, Staff, {
+    password?: import("mongoose").SchemaDefinitionProperty<string, Staff, import("mongoose").Document<unknown, {}, Staff, {
         id: string;
     }, import("mongoose").ResolveSchemaOptions<import("mongoose").DefaultSchemaOptions>> & Omit<Staff & {
         _id: import("mongoose").Types.ObjectId;
@@ -99,32 +86,5 @@ export declare const StaffSchema: import("mongoose").Schema<Staff, import("mongo
     }, "id"> & {
         id: string;
     }>;
-    department?: import("mongoose").SchemaDefinitionProperty<string, Staff, import("mongoose").Document<unknown, {}, Staff, {
-        id: string;
-    }, import("mongoose").ResolveSchemaOptions<import("mongoose").DefaultSchemaOptions>> & Omit<Staff & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
-        __v: number;
-    }, "id"> & {
-        id: string;
-    }>;
-    isActive?: import("mongoose").SchemaDefinitionProperty<boolean, Staff, import("mongoose").Document<unknown, {}, Staff, {
-        id: string;
-    }, import("mongoose").ResolveSchemaOptions<import("mongoose").DefaultSchemaOptions>> & Omit<Staff & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
-        __v: number;
-    }, "id"> & {
-        id: string;
-    }>;
-    password?: import("mongoose").SchemaDefinitionProperty<string, Staff, import("mongoose").Document<unknown, {}, Staff, {
-        id: string;
-    }, import("mongoose").ResolveSchemaOptions<import("mongoose").DefaultSchemaOptions>> & Omit<Staff & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
-        __v: number;
-    }, "id"> & {
-        id: string;
-    }>;
 }, Staff>;
-export type StaffDocument = any;
+export type StaffDocument = HydratedDocument<Staff>;

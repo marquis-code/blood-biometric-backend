@@ -15,19 +15,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.StaffController = void 0;
 const common_1 = require("@nestjs/common");
 const staff_service_1 = require("./staff.service");
+const staff_login_dto_1 = require("./dto/staff-login.dto");
 let StaffController = class StaffController {
     constructor(staffService) {
         this.staffService = staffService;
     }
-    async login(body) {
-        return await this.staffService.login(body.email, body.password);
+    async login(staffLoginDto) {
+        return await this.staffService.login(staffLoginDto.email, staffLoginDto.password);
     }
 };
 __decorate([
     (0, common_1.Post)('login'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [staff_login_dto_1.StaffLoginDto]),
     __metadata("design:returntype", Promise)
 ], StaffController.prototype, "login", null);
 StaffController = __decorate([

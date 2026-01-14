@@ -16,35 +16,19 @@ let Staff = class Staff {
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", String)
-], Staff.prototype, "firstName", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", String)
-], Staff.prototype, "lastName", void 0);
+], Staff.prototype, "name", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true, unique: true }),
     __metadata("design:type", String)
 ], Staff.prototype, "email", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
-    __metadata("design:type", String)
-], Staff.prototype, "phone", void 0);
-__decorate([
-    (0, mongoose_1.Prop)(),
-    __metadata("design:type", String)
-], Staff.prototype, "role", void 0);
-__decorate([
-    (0, mongoose_1.Prop)(),
-    __metadata("design:type", String)
-], Staff.prototype, "department", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ type: Boolean, default: true }),
-    __metadata("design:type", Boolean)
-], Staff.prototype, "isActive", void 0);
-__decorate([
-    (0, mongoose_1.Prop)(),
+    (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", String)
 ], Staff.prototype, "password", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", String)
+], Staff.prototype, "role", void 0);
 Staff = __decorate([
     (0, mongoose_1.Schema)({ timestamps: true })
 ], Staff);
